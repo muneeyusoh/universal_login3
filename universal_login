@@ -42,7 +42,7 @@
 
 <script>
   // ⚠️ ใส่ URL ของ CWF_Master_Hub ตรงนี้
-  const CENTRAL_API_URL = "https://script.google.com/macros/s/AKfycbwG-iVeDmIPxFaqy1GRk9j0PtPljQSllQt2bqP7q8U3E2zbPGzojxvDCQuGYXpNmZQW/exec";
+  const CENTRAL_API_URL = "https://script.google.com/macros/s/AKfycbxDpvQtOu9XX4CpEdZKPJTJN34WLMUBK9344-n-w3I1ul9VwdCLG9-l2-_vXTXoaOM55g/exec";
 
   async function handleLogin(e) {
     e.preventDefault();
