@@ -55,13 +55,13 @@
     try {
       const res = await fetch(CENTRAL_API_URL, { method: "POST", body: JSON.stringify(payload) }).then(r=>r.json());
       
-    // 🌟 บันทึกข้อมูลและ Sheet ID ประจำกองทุนลงในเครื่อง
+      if (res.status === 'success') {
+        // 🌟 บันทึก URL ประจำกองทุนลงในเครื่อง (Local Storage)
         localStorage.setItem("cwf_local_api", res.networkData.apiUrl);
         localStorage.setItem("cwf_network_name", res.networkData.networkName);
-        localStorage.setItem("cwf_sheet_id", res.networkData.sheetId); 
         
         Swal.fire({ title: 'สำเร็จ!', text: res.message, icon: 'success', timer: 2000, showConfirmButton: false }).then(() => {
-          // 🚀 สลับสายพาย้ายไปหน้า Portal
+          // 🚀 สลับสายพาย้ายไปหน้า Dashboard ของแอดมิน (เปลี่ยนชื่อไฟล์ admin.html ตามที่คุณตั้งไว้)
           window.location.href = "https://muneeyusoh.github.io/admin/admin.html"; 
         });
       } else {
