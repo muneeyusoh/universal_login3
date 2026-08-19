@@ -2,51 +2,267 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>CWF Portal | พื้นที่จัดการกองทุน</title>
+  <title>CWF Enterprise | แดชบอร์ดผู้บริหาร</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
   <style>
-    body { background-color: #F8FAFC; font-family: 'Prompt', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-    .portal-box { background: white; padding: 40px 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); width: 100%; max-width: 450px; text-align: center; margin: 20px; }
-    .btn-open { background-color: #10B981; color: white; border-radius: 12px; padding: 16px; font-weight: 700; width: 100%; border: none; transition: 0.3s; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
-    .btn-open:hover { background-color: #059669; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); }
-    .btn-logout { background-color: white; color: #DC2626; border-radius: 12px; padding: 12px; font-weight: 600; width: 100%; border: 1px solid #FCA5A5; margin-top: 15px; transition: 0.3s; }
-    .btn-logout:hover { background-color: #FEF2F2; }
+    :root { 
+      --primary: #1E3A8A; 
+      --secondary: #3B82F6; 
+      --success: #10B981; 
+      --warning: #F59E0B;
+      --bg-light: #F8FAFC; 
+    }
+    body { background-color: var(--bg-light); font-family: 'Prompt', sans-serif; overflow-x: hidden; }
+    
+    /* 📱 Sidebar */
+    .sidebar { background: var(--primary); color: white; min-height: 100vh; padding: 20px; box-shadow: 4px 0 15px rgba(0,0,0,0.05); z-index: 10; }
+    .sidebar-brand { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 12px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .nav-link { color: rgba(255,255,255,0.7); font-weight: 500; padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; transition: 0.3s; display: flex; align-items: center; gap: 12px; }
+    .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.15); color: white; transform: translateX(5px); }
+    
+    /* 🖥️ Main Content */
+    .topbar { background: white; padding: 16px 24px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+    
+    .stat-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #E2E8F0; transition: 0.3s; display: flex; align-items: center; gap: 20px; }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+    .icon-box { width: 60px; height: 60px; border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; }
+    
+    .table-container { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #E2E8F0; }
+    .table thead th { background-color: #F1F5F9; color: #475569; font-weight: 600; font-size: 0.9rem; padding: 12px 16px; border-bottom: none; }
+    .table tbody td { padding: 16px; vertical-align: middle; color: #1E293B; font-size: 0.95rem; border-bottom: 1px solid #F1F5F9; }
+    
+    .badge-status { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+    .badge-pending { background: #FEF3C7; color: #D97706; }
+    
+    #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
   </style>
 </head>
 <body>
-<div class="portal-box">
-  <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex justify-content-center align-items-center mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2.5rem;">
-    <i class="fa-solid fa-shield-halved"></i>
+
+<div id="loader">
+  <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+  <h5 class="fw-bold text-dark">กำลังดึงข้อมูลกองทุน...</h5>
+  <p class="text-muted small">โปรดรอสักครู่ ระบบกำลังเชื่อมต่อฐานข้อมูลตำบล</p>
+</div>
+
+<div class="container-fluid p-0" id="mainApp" style="display: none;">
+  <div class="row g-0">
+    
+    <!-- 🗂️ เมนูด้านข้าง (Sidebar) -->
+    <div class="col-md-2 sidebar d-none d-md-block">
+      <div class="sidebar-brand">
+        <i class="fa-solid fa-chart-pie fs-3 text-info"></i>
+        <span>CWF Admin</span>
+      </div>
+      <div class="nav flex-column">
+        <a href="#" class="nav-link active"><i class="fa-solid fa-house"></i> ภาพรวม (Dashboard)</a>
+        <a href="#" class="nav-link"><i class="fa-solid fa-users"></i> จัดการสมาชิก</a>
+        <a href="#" class="nav-link"><i class="fa-solid fa-file-invoice-dollar"></i> อนุมัติสวัสดิการ</a>
+        <a href="#" class="nav-link"><i class="fa-solid fa-piggy-bank"></i> ตรวจสอบเงินสมทบ</a>
+        
+        <hr class="border-light opacity-25 my-4">
+        
+        <a href="#" class="nav-link text-info" onclick="openRawDatabase()"><i class="fa-solid fa-table"></i> เปิด Google Sheets</a>
+        <a href="#" class="nav-link text-danger mt-2" onclick="logout()"><i class="fa-solid fa-power-off"></i> ออกจากระบบ</a>
+      </div>
+    </div>
+
+    <!-- 📊 พื้นที่แสดงผล (Main Content) -->
+    <div class="col-md-10 p-4 bg-light">
+      
+      <!-- Topbar -->
+      <div class="topbar">
+        <div>
+          <h4 class="fw-bold mb-0 text-primary" id="displayNetworkName">โหลดข้อมูล...</h4>
+          <p class="text-muted small mb-0"><i class="fa-solid fa-location-dot me-1"></i> ระบบบริหารจัดการข้อมูลระดับพื้นที่</p>
+        </div>
+        <div class="text-end">
+          <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-2">
+            <i class="fa-solid fa-link me-1"></i> เชื่อมต่อฐานข้อมูลสำเร็จ
+          </span>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="row g-4 mb-4">
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="icon-box bg-primary bg-opacity-10 text-primary"><i class="fa-solid fa-users"></i></div>
+            <div>
+              <p class="text-muted small fw-bold mb-1">สมาชิกทั้งหมด</p>
+              <h3 class="fw-bold mb-0 text-dark" id="statMembers">0</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="icon-box bg-success bg-opacity-10 text-success"><i class="fa-solid fa-sack-dollar"></i></div>
+            <div>
+              <p class="text-muted small fw-bold mb-1">เงินสมทบสะสมรวม</p>
+              <h3 class="fw-bold mb-0 text-dark"><span id="statContrib">0</span><span class="fs-6 ms-1 text-muted fw-normal">฿</span></h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="icon-box bg-info bg-opacity-10 text-info"><i class="fa-solid fa-hand-holding-medical"></i></div>
+            <div>
+              <p class="text-muted small fw-bold mb-1">จ่ายสวัสดิการแล้ว</p>
+              <h3 class="fw-bold mb-0 text-dark"><span id="statWelfare">0</span><span class="fs-6 ms-1 text-muted fw-normal">฿</span></h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card border-warning">
+            <div class="icon-box bg-warning text-white"><i class="fa-solid fa-bell"></i></div>
+            <div>
+              <p class="text-muted small fw-bold mb-1">รอการอนุมัติ</p>
+              <h3 class="fw-bold mb-0 text-danger" id="statPending">0</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ตารางรายการรออนุมัติ -->
+      <div class="table-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="fw-bold mb-0"><i class="fa-solid fa-clipboard-list text-primary me-2"></i> รายการเบิกสวัสดิการ (รอตรวจสอบ)</h5>
+          <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="loadDashboardData()"><i class="fa-solid fa-rotate-right"></i> รีเฟรช</button>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>วันที่ยื่นเรื่อง</th>
+                <th>ชื่อ-สกุล สมาชิก</th>
+                <th>ประเภทสวัสดิการ</th>
+                <th>จำนวนเงิน (บาท)</th>
+                <th>สถานะ</th>
+                <th class="text-center">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr>
+                <td colspan="6" class="text-center py-5 text-muted">
+                  <div class="spinner-border spinner-border-sm text-primary me-2"></div> กำลังโหลดข้อมูล...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
   </div>
-  <h5 class="fw-bold text-dark mb-1">พื้นที่จัดการข้อมูล</h5>
-  <h4 class="text-primary fw-bold mb-4" id="networkName">กำลังโหลดข้อมูล...</h4>
-  
-  <div class="alert alert-light border text-start small mb-4" style="border-radius: 12px;">
-    <i class="fa-solid fa-circle-check text-success me-1"></i> ยืนยันสิทธิ์ผู้ดูแลระบบสำเร็จ<br>
-    <i class="fa-solid fa-circle-info text-primary me-1"></i> คลิกปุ่มด้านล่างเพื่อเปิดหน้าต่างฐานข้อมูล Google Sheets ของตำบลคุณ
-  </div>
-  
-  <button class="btn-open" onclick="openSheet()"><i class="fa-solid fa-file-excel me-2"></i> เปิดฐานข้อมูลตำบล</button>
-  <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket me-2"></i> ออกจากระบบส่วนกลาง</button>
 </div>
 
 <script>
-  const netName = localStorage.getItem("cwf_network_name");
-  const sheetId = localStorage.getItem("cwf_sheet_id");
+  // 🔑 ดึงกุญแจ API และชื่อกองทุน ที่ได้จากหน้า Login
+  const LOCAL_API_URL = localStorage.getItem("cwf_local_api");
+  const NETWORK_NAME = localStorage.getItem("cwf_network_name");
+  const SHEET_ID = localStorage.getItem("cwf_sheet_id");
 
-  if(!netName || !sheetId) {
-    window.location.href = "universal_login.html";
-  } else {
-    document.getElementById('networkName').innerText = netName;
+  document.addEventListener("DOMContentLoaded", () => {
+    // 🚨 ตรวจสอบว่าแอบข้ามหน้า Login มาหรือไม่
+    if (!LOCAL_API_URL || !NETWORK_NAME) {
+      Swal.fire({ title: 'ปฏิเสธการเข้าถึง', text: 'กรุณาเข้าสู่ระบบผ่านประตูกลาง', icon: 'error' }).then(() => {
+        window.location.href = "universal_login.html";
+      });
+      return;
+    }
+    
+    document.getElementById('displayNetworkName').innerText = NETWORK_NAME;
+    loadDashboardData();
+  });
+
+  // 📡 ฟังก์ชันดึงข้อมูลจากฐานข้อมูลตำบล (API ท้องถิ่น)
+  async function loadDashboardData() {
+    try {
+      const res = await fetch(LOCAL_API_URL, { 
+        method: 'POST', 
+        body: JSON.stringify({ action: 'getAdminDashboard' }) 
+      }).then(r => r.json());
+
+      if (res.status === 'success') {
+        // อัปเดตตัวเลขการ์ด
+        document.getElementById('statMembers').innerText = (res.data.totalMembers || 0).toLocaleString();
+        document.getElementById('statContrib').innerText = (res.data.totalContributions || 0).toLocaleString();
+        document.getElementById('statWelfare').innerText = (res.data.totalWelfare || 0).toLocaleString();
+        document.getElementById('statPending').innerText = (res.data.pendingCount || 0).toLocaleString();
+
+        // อัปเดตตาราง
+        let html = "";
+        if (!res.data.pendingRequests || res.data.pendingRequests.length === 0) {
+          html = `<tr><td colspan="6" class="text-center py-5 text-muted"><i class="fa-solid fa-check-circle text-success fs-1 mb-2 d-block"></i> ไม่มีรายการรอตรวจสอบค้างอยู่</td></tr>`;
+        } else {
+          res.data.pendingRequests.forEach(req => {
+            html += `
+              <tr>
+                <td class="text-muted small">${req.date}</td>
+                <td class="fw-bold">${req.name} <br><small class="text-muted fw-normal">รหัส: ${req.memberId}</small></td>
+                <td><span class="text-primary fw-bold">${req.type}</span></td>
+                <td class="fw-bold text-dark">${parseFloat(req.amount).toLocaleString()} ฿</td>
+                <td><span class="badge-status badge-pending">รอตรวจสอบ</span></td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-success rounded-pill px-3 me-1" onclick="approveRequest('${req.id}')"><i class="fa-solid fa-check"></i> อนุมัติ</button>
+                  <button class="btn btn-sm btn-danger rounded-pill px-3" onclick="rejectRequest('${req.id}')"><i class="fa-solid fa-xmark"></i></button>
+                </td>
+              </tr>
+            `;
+          });
+        }
+        document.getElementById('tableBody').innerHTML = html;
+        
+        // ปิดหน้าโหลด แสดงแดชบอร์ด
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+
+      } else {
+        throw new Error(res.message || "ไม่สามารถดึงข้อมูลได้");
+      }
+    } catch (err) {
+      // ⚠️ กรณีระบบตำบลยังไม่มี API ฟังก์ชันนี้ จะเปิดปุ่มให้เข้าทาง Google Sheets ไปก่อน
+      document.getElementById('loader').innerHTML = `
+        <div class="text-center px-4">
+          <i class="fa-solid fa-triangle-exclamation text-warning fs-1 mb-3"></i>
+          <h5 class="fw-bold text-dark">ระบบ Dashboard อยู่ระหว่างอัปเดต</h5>
+          <p class="text-muted small mb-4">ฐานข้อมูลตำบลของคุณพร้อมใช้งานแล้ว แต่ต้องอัปเดต API ภายในเพื่อแสดงผลเป็นกราฟฟิก</p>
+          <button class="btn btn-success px-4 py-2 fw-bold" onclick="openRawDatabase()"><i class="fa-solid fa-file-excel me-2"></i> เปิดฐานข้อมูล (Google Sheets) เพื่อทำงานต่อ</button>
+          <button class="btn btn-outline-danger mt-3 d-block mx-auto" onclick="logout()">ออกจากระบบ</button>
+        </div>
+      `;
+    }
   }
 
-  function openSheet() {
-    window.open(`https://docs.google.com/spreadsheets/d/${sheetId}`, '_blank');
+  // ฟังก์ชันจำลองการอนุมัติ (รอเชื่อมต่อ Backend ในอนาคต)
+  function approveRequest(id) {
+    Swal.fire({ title: 'ยืนยันการอนุมัติ', text: "รายการนี้จะถูกบันทึกเข้าระบบเบิกจ่าย", icon: 'question', showCancelButton: true, confirmButtonColor: '#10B981', confirmButtonText: 'ยืนยันอนุมัติ' })
+    .then((result) => {
+      if (result.isConfirmed) Swal.fire('อัปเดต API ก่อน', 'ฟังก์ชันการอนุมัติผ่านเว็บต้องอัปเดตโค้ดที่ระบบตำบลก่อนครับ', 'info');
+    });
   }
 
+  // ฟังก์ชันจำลองการปฏิเสธ
+  function rejectRequest(id) {
+    Swal.fire({ title: 'ปฏิเสธรายการ', text: "รายการนี้จะถูกยกเลิก", icon: 'warning', showCancelButton: true, confirmButtonColor: '#DC2626', confirmButtonText: 'ยืนยันปฏิเสธ' })
+    .then((result) => {
+      if (result.isConfirmed) Swal.fire('อัปเดต API ก่อน', 'ฟังก์ชันการปฏิเสธผ่านเว็บต้องอัปเดตโค้ดที่ระบบตำบลก่อนครับ', 'info');
+    });
+  }
+
+  // ฟังก์ชันวาร์ปกลับไปดูข้อมูลดิบ
+  function openRawDatabase() {
+    window.open(`https://docs.google.com/spreadsheets/d/${SHEET_ID}`, '_blank');
+  }
+
+  // ออกจากระบบ
   function logout() {
     localStorage.clear();
     window.location.href = "universal_login.html";
