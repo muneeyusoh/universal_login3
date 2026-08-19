@@ -9,10 +9,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    body { background-color: #F8FAFC; font-family: 'Prompt', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-    .login-box { background: white; padding: 40px 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); width: 100%; max-width: 400px; }
+    body { background-color: #F8FAFC; font-family: 'Prompt', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+    .login-box { background: white; padding: 40px 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); width: 100%; max-width: 400px; margin: 20px; }
     .form-control { border-radius: 12px; padding: 14px; background-color: #F1F5F9; border: 1px solid #CBD5E1; }
     .btn-login { background-color: #1E3A8A; color: white; border-radius: 12px; padding: 14px; font-weight: 700; width: 100%; border: none; transition: 0.3s; }
+    .btn-login:hover { background-color: #1e3a8ad6; }
     .btn-login:active { transform: scale(0.98); }
   </style>
 </head>
@@ -24,30 +25,31 @@
       <i class="fa-solid fa-network-wired"></i>
     </div>
     <h4 class="fw-bold text-dark">CWF Portal</h4>
-    <p class="text-muted small">เข้าสู่ระบบจัดการกองทุนสวัสดิการ</p>
+    <p class="text-muted small">ระบบจัดการกองทุนสำหรับผู้บริหาร</p>
   </div>
   
   <form onsubmit="handleLogin(event)">
     <div class="mb-3">
-      <label class="small fw-bold text-muted mb-1 ms-1">อีเมลประธานกองทุน (ที่ลงทะเบียนไว้)</label>
-      <input type="email" class="form-control" name="email" required>
+      <label class="small fw-bold text-muted mb-1 ms-1">อีเมลประธาน/แอดมินกองทุน</label>
+      <input type="email" class="form-control" name="email" placeholder="email@example.com" required>
     </div>
     <div class="mb-4">
-      <label class="small fw-bold text-muted mb-1 ms-1">รหัสทะเบียน พอช.</label>
-      <input type="text" class="form-control fw-bold text-danger" name="codiCode" required>
+      <label class="small fw-bold text-muted mb-1 ms-1">รหัสทะเบียน พอช. ของกองทุน</label>
+      <input type="text" class="form-control fw-bold text-danger" name="codiCode" placeholder="เช่น 9600000000" required>
     </div>
-    <button type="submit" class="btn-login" id="loginBtn"><i class="fa-solid fa-right-to-bracket me-2"></i> เข้าสู่ระบบฐานข้อมูล</button>
+    <button type="submit" class="btn-login" id="loginBtn"><i class="fa-solid fa-right-to-bracket me-2"></i> ตรวจสอบสิทธิ์เข้าใช้งาน</button>
   </form>
 </div>
 
 <script>
-  // ⚠️ ใส่ URL ของ CWF_Master_Hub ตรงนี้
+  // ใช้ URL สมองกลกลางของคุณ
   const CENTRAL_API_URL = "https://script.google.com/macros/s/AKfycbxDpvQtOu9XX4CpEdZKPJTJN34WLMUBK9344-n-w3I1ul9VwdCLG9-l2-_vXTXoaOM55g/exec";
 
   async function handleLogin(e) {
     e.preventDefault();
     const btn = document.getElementById('loginBtn');
-    btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังตรวจสอบสิทธิ์...';
+    btn.disabled = true; 
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>กำลังเชื่อมต่อส่วนกลาง...';
     
     const payload = Object.fromEntries(new FormData(e.target).entries());
     payload.action = "adminLogin";
@@ -56,21 +58,23 @@
       const res = await fetch(CENTRAL_API_URL, { method: "POST", body: JSON.stringify(payload) }).then(r=>r.json());
       
       if (res.status === 'success') {
-        // 🌟 บันทึก URL ประจำกองทุนลงในเครื่อง (Local Storage)
+        // บันทึกข้อมูลและ Sheet ID ประจำกองทุนลงในความจำเครื่อง
         localStorage.setItem("cwf_local_api", res.networkData.apiUrl);
         localStorage.setItem("cwf_network_name", res.networkData.networkName);
+        localStorage.setItem("cwf_sheet_id", res.networkData.sheetId); 
         
-        Swal.fire({ title: 'สำเร็จ!', text: res.message, icon: 'success', timer: 2000, showConfirmButton: false }).then(() => {
-          // 🚀 สลับสายพาย้ายไปหน้า Dashboard ของแอดมิน (เปลี่ยนชื่อไฟล์ admin.html ตามที่คุณตั้งไว้)
-          window.location.href = "https://muneeyusoh.github.io/admin/admin.html"; 
+        Swal.fire({ title: 'สำเร็จ!', text: res.message, icon: 'success', timer: 1500, showConfirmButton: false }).then(() => {
+          // สลับสายพาย้ายไปหน้าจอ Portal
+          window.location.href = "admin.html"; 
         });
       } else {
         Swal.fire('ปฏิเสธการเข้าถึง', res.message, 'error');
       }
     } catch (err) {
-      Swal.fire('Error', 'เชื่อมต่อระบบกลางไม่สำเร็จ', 'error');
+      Swal.fire('Error', 'ไม่สามารถเชื่อมต่อระบบกลางได้ในขณะนี้', 'error');
     } finally {
-      btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-right-to-bracket me-2"></i> เข้าสู่ระบบฐานข้อมูล';
+      btn.disabled = false; 
+      btn.innerHTML = '<i class="fa-solid fa-right-to-bracket me-2"></i> ตรวจสอบสิทธิ์เข้าใช้งาน';
     }
   }
 </script>
