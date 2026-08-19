@@ -2,200 +2,166 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>CWF Enterprise | แดชบอร์ดผู้บริหาร</title>
+  <title>CWF Fintech | แดชบอร์ดกองทุน</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <!-- 🌟 เพิ่ม Bootstrap Bundle สำหรับระบบเมนูมือถือ -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <style>
     :root { 
-      --primary: #1E3A8A; --secondary: #3B82F6; --success: #10B981; 
-      --warning: #F59E0B; --bg-light: #F1F5F9; 
+      --fintech-primary: #0F172A;   /* สีน้ำเงินเข้มแบบแอปการเงิน */
+      --fintech-accent: #3B82F6;    /* สีฟ้าสว่าง */
+      --fintech-success: #10B981; 
+      --bg-color: #F8FAFC; 
     }
-    body { background-color: var(--bg-light); font-family: 'Prompt', sans-serif; overflow-x: hidden; padding-top: 60px; }
-    @media (min-width: 768px) { body { padding-top: 0; } }
+    body { background-color: var(--bg-color); font-family: 'Prompt', sans-serif; overflow-x: hidden; padding-bottom: 80px; }
 
-    /* 📱 Mobile Top Navbar */
-    .mobile-navbar { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); height: 60px; z-index: 1030; }
+    /* 🏦 Fintech Header */
+    .fintech-header { background: linear-gradient(135deg, var(--fintech-primary), #1E293B); color: white; padding: 40px 20px 60px 20px; border-bottom-left-radius: 32px; border-bottom-right-radius: 32px; position: relative; }
+    .network-badge { background: rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 8px; backdrop-filter: blur(5px); }
+    .balance-label { color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-top: 25px; margin-bottom: 5px; }
+    .balance-amount { font-size: 2.8rem; font-weight: 700; letter-spacing: -1px; line-height: 1; margin-bottom: 0; }
+    .currency { font-size: 1.2rem; font-weight: 400; color: var(--fintech-success); }
+
+    /* ⚡ Quick Actions (ลอยทับ Header) */
+    .quick-actions { display: flex; justify-content: space-between; padding: 0 25px; margin-top: -35px; position: relative; z-index: 10; }
+    .action-btn { background: white; width: 65px; height: 65px; border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-decoration: none; color: var(--fintech-primary); transition: 0.2s; border: none; }
+    .action-btn:active { transform: scale(0.95); }
+    .action-btn i { font-size: 1.5rem; margin-bottom: 4px; color: var(--fintech-accent); }
+    .action-btn span { font-size: 0.7rem; font-weight: 600; }
+
+    /* 📊 Overview Cards */
+    .dashboard-section { padding: 25px 20px; }
+    .section-title { font-size: 1.1rem; font-weight: 700; color: var(--fintech-primary); margin-bottom: 15px; }
     
-    /* 🗂️ Sidebar (Desktop & Offcanvas) */
-    .sidebar { background: var(--primary); color: white; min-height: 100vh; padding: 20px; box-shadow: 4px 0 15px rgba(0,0,0,0.05); }
-    .sidebar-brand { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 12px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .nav-link { color: rgba(255,255,255,0.7); font-weight: 500; padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; transition: 0.3s; display: flex; align-items: center; gap: 12px; }
-    .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.15); color: white; transform: translateX(5px); }
-    .offcanvas-body .nav-link { font-size: 1.1rem; padding: 14px 20px; }
+    .grid-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .stat-card { background: white; padding: 20px; border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #F1F5F9; }
+    .stat-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 15px; }
+    .stat-value { font-size: 1.4rem; font-weight: 700; color: var(--fintech-primary); margin-bottom: 2px; }
+    .stat-label { font-size: 0.8rem; color: #64748B; font-weight: 500; }
 
-    /* 🖥️ Main Content */
-    .content-wrapper { padding: 15px; }
-    @media (min-width: 768px) { .content-wrapper { padding: 30px; } }
+    /* 📜 Transaction List (แทนที่ตาราง) */
+    .transaction-item { background: white; padding: 16px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); border: 1px solid #F1F5F9; }
+    .tx-icon { width: 45px; height: 45px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; background: #FFFBEB; color: #D97706; }
+    .tx-details { flex-grow: 1; padding: 0 15px; }
+    .tx-name { font-weight: 700; color: var(--fintech-primary); font-size: 0.95rem; margin-bottom: 2px; }
+    .tx-type { font-size: 0.75rem; color: #64748B; }
+    .tx-amount { text-align: right; }
+    .tx-val { font-weight: 700; font-size: 0.95rem; color: var(--fintech-primary); }
+    .tx-status { font-size: 0.7rem; font-weight: 600; padding: 4px 10px; border-radius: 12px; background: #FEF3C7; color: #D97706; display: inline-block; margin-top: 4px; }
 
-    .topbar { background: white; padding: 16px 20px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 20px; }
-    
-    /* 📊 Stat Cards Optimized for Mobile */
-    .stat-card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #E2E8F0; height: 100%; display: flex; flex-direction: column; justify-content: center; }
-    .icon-box { width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; margin-bottom: 12px; }
-    .stat-card h3 { font-size: 1.3rem; margin-top: 5px; }
-    @media (min-width: 768px) {
-      .stat-card { padding: 24px; flex-direction: row; align-items: center; gap: 20px; }
-      .icon-box { width: 60px; height: 60px; font-size: 1.8rem; margin-bottom: 0; }
-      .stat-card h3 { font-size: 1.75rem; }
-    }
+    /* 📱 Bottom Navigation */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; height: 75px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -5px 25px rgba(0,0,0,0.05); border-top-left-radius: 24px; border-top-right-radius: 24px; z-index: 1000; padding-bottom: 10px; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: #94A3B8; text-decoration: none; font-size: 0.7rem; font-weight: 500; gap: 4px; }
+    .nav-item.active { color: var(--fintech-accent); }
+    .nav-item i { font-size: 1.4rem; transition: 0.2s; }
+    .nav-item.active i { transform: translateY(-3px); }
 
-    /* 📋 Table Container */
-    .table-container { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #E2E8F0; }
-    .table thead th { background-color: #F8FAFC; color: #475569; font-weight: 600; font-size: 0.85rem; padding: 12px 16px; white-space: nowrap; }
-    .table tbody td { padding: 14px 16px; vertical-align: middle; font-size: 0.9rem; white-space: nowrap; }
-    
-    .badge-status { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-    .badge-pending { background: #FEF3C7; color: #D97706; }
-
-    #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    /* ⚙️ Loader */
+    #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--fintech-primary); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; }
   </style>
 </head>
 <body>
 
 <div id="loader">
-  <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
-  <h5 class="fw-bold text-dark">กำลังซิงค์ข้อมูล...</h5>
-  <p class="text-muted small">โปรดรอสักครู่</p>
+  <div class="spinner-border text-light mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+  <h5 class="fw-bold">CWF Fintech</h5>
+  <p class="small text-white-50">กำลังเชื่อมต่อข้อมูลความปลอดภัย...</p>
 </div>
 
-<!-- 📱 แถบเมนูด้านบนสำหรับมือถือ -->
-<nav class="navbar mobile-navbar d-md-none fixed-top w-100 d-flex justify-content-between align-items-center px-3">
-  <div class="fw-bold text-primary fs-5"><i class="fa-solid fa-chart-pie me-2"></i>CWF Admin</div>
-  <button class="btn btn-light border-0 rounded-circle" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
-    <i class="fa-solid fa-bars fs-5 text-dark"></i>
-  </button>
-</nav>
-
-<!-- 📱 เมนูสไลด์ด้านข้างสำหรับมือถือ (Offcanvas) -->
-<div class="offcanvas offcanvas-end bg-primary" tabindex="-1" id="mobileMenu">
-  <div class="offcanvas-header border-bottom border-light border-opacity-25">
-    <h5 class="offcanvas-title text-white fw-bold"><i class="fa-solid fa-chart-pie me-2"></i>เมนูจัดการ</h5>
-    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
-  </div>
-  <div class="offcanvas-body d-flex flex-column">
-    <a href="#" class="nav-link active" data-bs-dismiss="offcanvas"><i class="fa-solid fa-house w-25"></i> ภาพรวมกองทุน</a>
-    <a href="#" class="nav-link"><i class="fa-solid fa-users w-25"></i> จัดการสมาชิก</a>
-    <a href="#" class="nav-link"><i class="fa-solid fa-file-invoice-dollar w-25"></i> อนุมัติรายการ</a>
+<div id="mainApp" style="display: none;">
+  
+  <!-- 🏦 Header Bank Style -->
+  <div class="fintech-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <div class="network-badge">
+          <i class="fa-solid fa-shield-halved text-success"></i> 
+          <span id="displayNetworkName">กำลังโหลด...</span>
+        </div>
+      </div>
+      <i class="fa-regular fa-bell fs-5 text-white-50"></i>
+    </div>
     
-    <div class="mt-auto">
-      <hr class="border-light opacity-25 mb-3">
-      <a href="#" class="nav-link text-info" onclick="openRawDatabase()"><i class="fa-solid fa-table w-25"></i> เปิดฐานข้อมูล</a>
-      <a href="#" class="nav-link text-danger mt-2" onclick="logout()"><i class="fa-solid fa-power-off w-25"></i> ออกจากระบบ</a>
+    <p class="balance-label">เงินสมทบสะสมรวม (บาท)</p>
+    <h1 class="balance-amount"><span id="statContrib">0.00</span> <span class="currency">฿</span></h1>
+  </div>
+
+  <!-- ⚡ Quick Actions -->
+  <div class="quick-actions">
+    <button class="action-btn" onclick="loadDashboardData()">
+      <i class="fa-solid fa-arrows-rotate"></i>
+      <span>อัปเดต</span>
+    </button>
+    <button class="action-btn" onclick="openRawDatabase()">
+      <i class="fa-solid fa-file-excel"></i>
+      <span>ฐานข้อมูล</span>
+    </button>
+    <button class="action-btn">
+      <i class="fa-solid fa-user-plus"></i>
+      <span>เพิ่มสมาชิก</span>
+    </button>
+    <button class="action-btn text-danger" onclick="logout()">
+      <i class="fa-solid fa-power-off text-danger"></i>
+      <span class="text-danger">ออก</span>
+    </button>
+  </div>
+
+  <!-- 📊 Overview -->
+  <div class="dashboard-section mt-3">
+    <h3 class="section-title">ภาพรวมกองทุน</h3>
+    <div class="grid-cards">
+      <div class="stat-card">
+        <div class="stat-icon bg-primary bg-opacity-10 text-primary"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-value" id="statMembers">0</div>
+        <div class="stat-label">สมาชิกทั้งหมด (คน)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-success bg-opacity-10 text-success"><i class="fa-solid fa-hand-holding-medical"></i></div>
+        <div class="stat-value" id="statWelfare">0</div>
+        <div class="stat-label">สวัสดิการที่จ่าย (บาท)</div>
+      </div>
     </div>
   </div>
+
+  <!-- 📜 Pending Transactions -->
+  <div class="dashboard-section pt-0">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="section-title mb-0">รายการรอตรวจสอบ</h3>
+      <span class="badge bg-danger rounded-pill px-3" id="statPendingBadge">0 รายการ</span>
+    </div>
+    
+    <!-- พื้นที่แสดงผลรายการแบบมือถือ (List View) -->
+    <div id="pendingListContainer">
+      <div class="text-center py-4 text-muted small">
+        <div class="spinner-border spinner-border-sm mb-2"></div><br>กำลังดึงข้อมูล...
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<div class="container-fluid p-0" id="mainApp" style="display: none;">
-  <div class="row g-0">
-    
-    <!-- 🗂️ เมนูด้านข้าง (สำหรับ Desktop) -->
-    <div class="col-md-2 sidebar d-none d-md-block fixed-top h-100" style="width: 16.666667%;">
-      <div class="sidebar-brand">
-        <i class="fa-solid fa-chart-pie fs-3 text-info"></i>
-        <span>CWF Admin</span>
-      </div>
-      <div class="nav flex-column">
-        <a href="#" class="nav-link active"><i class="fa-solid fa-house w-25"></i> ภาพรวม (Dashboard)</a>
-        <a href="#" class="nav-link"><i class="fa-solid fa-users w-25"></i> จัดการสมาชิก</a>
-        <a href="#" class="nav-link"><i class="fa-solid fa-file-invoice-dollar w-25"></i> อนุมัติสวัสดิการ</a>
-        
-        <hr class="border-light opacity-25 my-4">
-        <a href="#" class="nav-link text-info" onclick="openRawDatabase()"><i class="fa-solid fa-table w-25"></i> เปิด Google Sheets</a>
-        <a href="#" class="nav-link text-danger mt-2" onclick="logout()"><i class="fa-solid fa-power-off w-25"></i> ออกจากระบบ</a>
-      </div>
-    </div>
-
-    <!-- 📊 พื้นที่แสดงผล (Main Content) -->
-    <div class="col-md-10 offset-md-2 content-wrapper">
-      
-      <!-- Topbar Header -->
-      <div class="topbar d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
-        <div>
-          <h5 class="fw-bold mb-1 text-primary" id="displayNetworkName">โหลดข้อมูล...</h5>
-          <p class="text-muted small mb-0"><i class="fa-solid fa-location-dot me-1"></i> พื้นที่บริหารจัดการข้อมูล</p>
-        </div>
-        <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-2 w-100 w-md-auto text-center">
-          <i class="fa-solid fa-circle-check me-1"></i> ออนไลน์
-        </span>
-      </div>
-
-      <!-- Stat Cards (ใช้ Grid แบบครึ่งจอในมือถือ col-6) -->
-      <div class="row g-3 g-md-4 mb-4">
-        <div class="col-6 col-md-3">
-          <div class="stat-card">
-            <div class="icon-box bg-primary bg-opacity-10 text-primary"><i class="fa-solid fa-users"></i></div>
-            <div>
-              <p class="text-muted small fw-bold mb-0">สมาชิก</p>
-              <h3 class="fw-bold mb-0 text-dark" id="statMembers">0</h3>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="stat-card">
-            <div class="icon-box bg-success bg-opacity-10 text-success"><i class="fa-solid fa-sack-dollar"></i></div>
-            <div>
-              <p class="text-muted small fw-bold mb-0">เงินสมทบ</p>
-              <h3 class="fw-bold mb-0 text-dark"><span id="statContrib">0</span><small class="fs-6 ms-1 text-muted fw-normal">฿</small></h3>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="stat-card">
-            <div class="icon-box bg-info bg-opacity-10 text-info"><i class="fa-solid fa-hand-holding-medical"></i></div>
-            <div>
-              <p class="text-muted small fw-bold mb-0">จ่ายแล้ว</p>
-              <h3 class="fw-bold mb-0 text-dark"><span id="statWelfare">0</span><small class="fs-6 ms-1 text-muted fw-normal">฿</small></h3>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="stat-card border-warning">
-            <div class="icon-box bg-warning text-white"><i class="fa-solid fa-bell"></i></div>
-            <div>
-              <p class="text-muted small fw-bold mb-0">รออนุมัติ</p>
-              <h3 class="fw-bold mb-0 text-danger" id="statPending">0</h3>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ตารางรายการรออนุมัติ (ปรับให้เลื่อนซ้ายขวาได้ในมือถือ) -->
-      <div class="table-container">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="fw-bold mb-0"><i class="fa-solid fa-clipboard-list text-primary me-2"></i> รายการรอตรวจสอบ</h6>
-          <button class="btn btn-sm btn-light border rounded-pill px-3" onclick="loadDashboardData()"><i class="fa-solid fa-rotate-right"></i></button>
-        </div>
-        
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead>
-              <tr>
-                <th>วันที่</th>
-                <th>สมาชิก</th>
-                <th>รายการ</th>
-                <th>จำนวนเงิน</th>
-                <th>สถานะ</th>
-                <th class="text-center">จัดการ</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-              <tr>
-                <td colspan="6" class="text-center py-4 text-muted">กำลังโหลดข้อมูล...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
-  </div>
+<!-- 📱 Bottom Navigation -->
+<div class="bottom-nav">
+  <a href="#" class="nav-item active">
+    <i class="fa-solid fa-house"></i>
+    <span>หน้าแรก</span>
+  </a>
+  <a href="#" class="nav-item">
+    <i class="fa-solid fa-wallet"></i>
+    <span>สมทบ</span>
+  </a>
+  <a href="#" class="nav-item">
+    <i class="fa-solid fa-clipboard-check"></i>
+    <span>อนุมัติ</span>
+  </a>
+  <a href="#" class="nav-item" onclick="openRawDatabase()">
+    <i class="fa-solid fa-table"></i>
+    <span>หลังบ้าน</span>
+  </a>
 </div>
 
 <script>
@@ -219,44 +185,59 @@
       }).then(r => r.json());
 
       if (res.status === 'success') {
+        // อัปเดตตัวเลข
         document.getElementById('statMembers').innerText = (res.data.totalMembers || 0).toLocaleString();
-        document.getElementById('statContrib').innerText = (res.data.totalContributions || 0).toLocaleString();
+        document.getElementById('statContrib').innerText = (res.data.totalContributions || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('statWelfare').innerText = (res.data.totalWelfare || 0).toLocaleString();
-        document.getElementById('statPending').innerText = (res.data.pendingCount || 0).toLocaleString();
+        document.getElementById('statPendingBadge').innerText = (res.data.pendingCount || 0) + " รายการ";
 
+        // สร้าง Transaction List
         let html = "";
         if (!res.data.pendingRequests || res.data.pendingRequests.length === 0) {
-          html = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="fa-solid fa-check-circle text-success fs-3 mb-2 d-block"></i> ไม่มีรายการรอตรวจสอบ</td></tr>`;
+          html = `
+            <div class="text-center py-5">
+              <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex justify-content-center align-items-center mb-3" style="width: 70px; height: 70px; font-size: 2rem;">
+                <i class="fa-solid fa-check"></i>
+              </div>
+              <h6 class="fw-bold text-dark">เยี่ยมมาก! ไม่มีรายการค้าง</h6>
+              <p class="text-muted small">ข้อมูลกองทุนของคุณเป็นปัจจุบันแล้ว</p>
+            </div>`;
         } else {
           res.data.pendingRequests.forEach(req => {
+            // เช็คไอคอนตามประเภทรายการ
+            let iconCode = req.type.includes("สมาชิก") ? '<i class="fa-solid fa-user-plus"></i>' : 
+                           req.type.includes("สวัสดิการ") ? '<i class="fa-solid fa-hand-holding-medical"></i>' : 
+                           '<i class="fa-solid fa-file-invoice-dollar"></i>';
+                           
             html += `
-              <tr>
-                <td class="text-muted small">${req.date}</td>
-                <td><div class="fw-bold text-dark">${req.name}</div><small class="text-muted">ID: ${req.memberId}</small></td>
-                <td><span class="text-primary fw-semibold">${req.type}</span></td>
-                <td class="fw-bold">${parseFloat(req.amount).toLocaleString()} ฿</td>
-                <td><span class="badge-status badge-pending">รอตรวจสอบ</span></td>
-                <td class="text-center">
-                  <button class="btn btn-sm btn-success rounded-pill px-2 me-1"><i class="fa-solid fa-check"></i></button>
-                  <button class="btn btn-sm btn-danger rounded-pill px-2"><i class="fa-solid fa-xmark"></i></button>
-                </td>
-              </tr>
+              <div class="transaction-item" onclick="openRawDatabase()">
+                <div class="tx-icon">${iconCode}</div>
+                <div class="tx-details">
+                  <div class="tx-name">${req.name}</div>
+                  <div class="tx-type">${req.type} • ${req.date}</div>
+                </div>
+                <div class="tx-amount">
+                  <div class="tx-val">${parseFloat(req.amount).toLocaleString()} ฿</div>
+                  <div class="tx-status">รอตรวจสอบ</div>
+                </div>
+              </div>
             `;
           });
         }
-        document.getElementById('tableBody').innerHTML = html;
-        document.getElementById('loader').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
-      } else {
-        throw new Error("API Error");
-      }
+        document.getElementById('pendingListContainer').innerHTML = html;
+        
+        // ปิดหน้าโหลด แสดงแอป
+        setTimeout(() => {
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('mainApp').style.display = 'block';
+        }, 500); // ดีเลย์นิดนึงให้ดูพรีเมียม
+
+      } else { throw new Error("API Error"); }
     } catch (err) {
       document.getElementById('loader').innerHTML = `
-        <div class="text-center px-4">
-          <i class="fa-solid fa-triangle-exclamation text-warning fs-1 mb-3"></i>
-          <h5 class="fw-bold text-dark">เชื่อมต่อไม่สำเร็จ</h5>
-          <button class="btn btn-success px-4 mt-3 rounded-pill" onclick="openRawDatabase()"><i class="fa-solid fa-file-excel me-2"></i> เปิดฐานข้อมูล (Sheets)</button>
-        </div>
+        <i class="fa-solid fa-triangle-exclamation text-warning fs-1 mb-3"></i>
+        <h5 class="fw-bold">ไม่สามารถดึงข้อมูลได้</h5>
+        <button class="btn btn-outline-light mt-3 rounded-pill px-4" onclick="openRawDatabase()">ไปที่ฐานข้อมูล (Sheets)</button>
       `;
     }
   }
