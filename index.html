@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>CWF Smart Member | สวัสดิการชุมชน</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- 🌟 โหลดระบบของ LINE และ SweetAlert -->
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    :root { 
+      --app-bg: #F8FAFC; 
+      --primary: #047857; /* สีเขียวมรกต แบบแอปการเงิน */
+      --primary-light: #10B981;
+      --dark: #0F172A;
+      --text-muted: #64748B;
+    }
+    body { background-color: var(--app-bg); font-family: 'Prompt', sans-serif; overflow-x: hidden; padding-bottom: 30px; }
+
+    /* 🔄 Loader Screen */
+    #loaderScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    
+    /* 📝 Register Screen */
+    .register-header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); padding: 40px 20px 30px; color: white; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(4, 120, 87, 0.2); }
+    .form-card { background: white; border-radius: 20px; padding: 25px; margin: 0 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #F1F5F9; }
+    .form-control, .form-select { border-radius: 12px; padding: 12px 15px; border: 1px solid #E2E8F0; background-color: #F8FAFC; font-size: 0.95rem; }
+    .form-control:focus, .form-select:focus { border-color: var(--primary-light); box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25); }
+    .btn-submit { background-color: var(--primary); color: white; border-radius: 14px; padding: 14px; font-weight: 600; width: 100%; border: none; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(4, 120, 87, 0.3); transition: 0.2s; }
+    .btn-submit:active { transform: scale(0.98); }
+
+    /* 💳 Wallet Dashboard Screen */
+    .wallet-header { background: linear-gradient(135deg, var(--dark), #1E293B); padding: 30px 20px 80px; color: white; border-bottom-left-radius: 32px; border-bottom-right-radius: 32px; position: relative; }
+    .user-profile { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .profile-img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); }
+    .tier-badge { background: linear-gradient(45deg, #D97706, #F59E0B); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+    
+    /* บัตรเงินสมทบ */
+    .balance-card { background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 24px; padding: 25px; margin: -50px 20px 25px; box-shadow: 0 10px 25px rgba(4, 120, 87, 0.4); color: white; position: relative; z-index: 10; border: 1px solid rgba(255,255,255,0.1); }
+    .balance-title { font-size: 0.85rem; opacity: 0.9; margin-bottom: 5px; }
+    .balance-amount { font-size: 2.2rem; font-weight: 700; line-height: 1; margin-bottom: 15px; }
+    
+    /* เมนู 4 ปุ่ม */
+    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 0 15px 25px; }
+    .action-btn { background: white; border-radius: 16px; padding: 15px 5px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #F1F5F9; color: var(--dark); text-decoration: none; display: flex; flex-direction: column; align-items: center; transition: 0.2s; }
+    .action-btn:active { transform: scale(0.95); background: #F8FAFC; }
+    .action-icon { width: 45px; height: 45px; border-radius: 14px; background: rgba(16, 185, 129, 0.1); color: var(--primary); display: flex; justify-content: center; align-items: center; font-size: 1.3rem; margin-bottom: 8px; }
+    .action-text { font-size: 0.75rem; font-weight: 600; }
+
+    /* รายการล่าสุด */
+    .section-title { padding: 0 20px; font-weight: 700; font-size: 1.1rem; color: var(--dark); margin-bottom: 15px; }
+    .history-list { padding: 0 15px; }
+    .history-item { background: white; border-radius: 16px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.02); border: 1px solid #F1F5F9; }
+    .history-icon { width: 40px; height: 40px; border-radius: 12px; background: #F1F5F9; display: flex; justify-content: center; align-items: center; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<!-- 🔄 Loader -->
+<div id="loaderScreen">
+  <div class="spinner-border text-success mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+  <h5 class="fw-bold text-dark" id="loaderText">กำลังเข้าสู่ระบบ...</h5>
+  <p class="small text-muted">เชื่อมต่อข้อมูลผ่าน LINE</p>
+</div>
+
+<!-- ==============================================
+      📱 SCREEN 1: REGISTER (สมาร์ทรีจิสเตอร์) 
+     ============================================== -->
+<div id="registerScreen" style="display: none;">
+  <div class="register-header">
+    <div class="bg-white text-success rounded-circle d-inline-flex justify-content-center align-items-center mb-3" style="width: 60px; height: 60px; font-size: 1.8rem;">
+      <i class="fa-solid fa-handshake-angle"></i>
+    </div>
+    <h4 class="fw-bold mb-1">สมัครสมาชิกกองทุน</h4>
+    <p class="small opacity-75 mb-0">ลงทะเบียนครั้งเดียว ใช้งานได้ตลอดไป</p>
+  </div>
+
+  <div class="form-card">
+    <form id="registerForm" onsubmit="submitRegistration(event)">
+      <!-- UID ที่ดึงจาก LINE (ซ่อนไว้) -->
+      <input type="hidden" id="regUid" name="uid">
+
+      <div class="mb-3">
+        <label class="small fw-bold text-muted mb-1 ms-1">เลือกกองทุนในพื้นที่ของคุณ</label>
+        <select class="form-select fw-bold text-success border-success bg-success bg-opacity-10" id="networkSelect" name="subdistrict" required onchange="loadCenters()">
+          <option value="" disabled selected>-- กำลังโหลดรายชื่อกองทุน --</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="small fw-bold text-muted mb-1 ms-1">ศูนย์ประสานงาน / หมู่บ้าน</label>
+        <select class="form-select" id="centerSelect" name="center" required>
+          <option value="" disabled selected>กรุณาเลือกกองทุนก่อน</option>
+        </select>
+      </div>
+
+      <div class="row g-2 mb-3">
+        <div class="col-4">
+          <label class="small fw-bold text-muted mb-1 ms-1">คำนำหน้า</label>
+          <select class="form-select" name="prefix" required>
+            <option value="นาย">นาย</option>
+            <option value="นาง">นาง</option>
+            <option value="นางสาว">นางสาว</option>
+          </select>
+        </div>
+        <div class="col-8">
+          <label class="small fw-bold text-muted mb-1 ms-1">ชื่อ - นามสกุล</label>
+          <input type="text" class="form-control" name="fullName" placeholder="เช่น ใจดี มีสุข" required>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="small fw-bold text-muted mb-1 ms-1">เลขประจำตัวประชาชน (13 หลัก)</label>
+        <input type="tel" class="form-control" name="nationalId" pattern="[0-9]{13}" placeholder="0000000000000" required>
+      </div>
+
+      <div class="mb-4">
+        <label class="small fw-bold text-muted mb-1 ms-1">เบอร์โทรศัพท์ติดต่อ</label>
+        <input type="tel" class="form-control" name="phone" pattern="[0-9]{10}" placeholder="08XXXXXXXX" required>
+      </div>
+
+      <div class="form-check mb-4">
+        <input class="form-check-input border-success" type="checkbox" id="pdpa" name="pdpaConsent" required>
+        <label class="form-check-label small text-muted" for="pdpa">
+          ข้าพเจ้ายินยอมให้กองทุนจัดเก็บและประมวลผลข้อมูลส่วนบุคคลเพื่อจัดทำสวัสดิการชุมชน
+        </label>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btnSubmitReg"><i class="fa-solid fa-paper-plane me-2"></i> ส่งใบสมัครสมาชิก</button>
+    </form>
+  </div>
+</div>
+
+<!-- ==============================================
+      📱 SCREEN 2: WALLET DASHBOARD (สมาชิก) 
+     ============================================== -->
+<div id="dashboardScreen" style="display: none;">
+  
+  <div class="wallet-header">
+    <div class="user-profile">
+      <div class="d-flex align-items-center gap-3">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="profile-img" id="lineProfileImg" alt="Profile">
+        <div>
+          <p class="small opacity-75 mb-0">สวัสดี,</p>
+          <h6 class="fw-bold mb-0" id="dashName">ชื่อ นามสกุล</h6>
+        </div>
+      </div>
+      <div>
+        <div class="tier-badge" id="dashTier"><i class="fa-solid fa-crown"></i> สมาชิก</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="balance-card">
+    <div class="d-flex justify-content-between align-items-center">
+      <p class="balance-title">ยอดเงินสมทบสะสม</p>
+      <i class="fa-solid fa-circle-check text-white opacity-75 fs-5"></i>
+    </div>
+    <div class="balance-amount"><span id="dashContrib">0</span> <span class="fs-4 fw-normal">฿</span></div>
+    
+    <div class="d-flex justify-content-between border-top border-light border-opacity-25 pt-3 mt-2">
+      <div>
+        <div class="small opacity-75" style="font-size: 0.7rem;">CWF Points</div>
+        <div class="fw-bold"><i class="fa-solid fa-star text-warning me-1"></i><span id="dashPoints">0</span></div>
+      </div>
+      <div class="text-end">
+        <div class="small opacity-75" style="font-size: 0.7rem;">สวัสดิการที่รับแล้ว</div>
+        <div class="fw-bold" id="dashWelfare">0 ฿</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Menu -->
+  <div class="action-grid">
+    <a href="contribution.html" class="action-btn">
+      <div class="action-icon"><i class="fa-solid fa-wallet"></i></div>
+      <span class="action-text">จ่ายสมทบ</span>
+    </a>
+    <a href="claim.html" class="action-btn">
+      <div class="action-icon" style="color: #D97706; background: #FEF3C7;"><i class="fa-solid fa-hand-holding-medical"></i></div>
+      <span class="action-text">เบิกเงิน</span>
+    </a>
+    <a href="#" class="action-btn" onclick="checkStatus()">
+      <div class="action-icon" style="color: #2563EB; background: #DBEAFE;"><i class="fa-solid fa-arrows-rotate"></i></div>
+      <span class="action-text">อัปเดต</span>
+    </a>
+    <a href="#" class="action-btn" onclick="Swal.fire('ติดต่อเรา', 'ศูนย์ประสานงาน: ' + userCenter, 'info')">
+      <div class="action-icon" style="color: #475569; background: #F1F5F9;"><i class="fa-solid fa-headset"></i></div>
+      <span class="action-text">ติดต่อ</span>
+    </a>
+  </div>
+
+  <div class="section-title">สถานะบัญชีของคุณ</div>
+  <div class="history-list">
+    <div class="history-item">
+      <div class="d-flex align-items-center gap-3">
+        <div class="history-icon text-primary bg-primary bg-opacity-10"><i class="fa-solid fa-id-card"></i></div>
+        <div>
+          <div class="fw-bold text-dark fs-6">สถานะการเป็นสมาชิก</div>
+          <div class="small text-muted" id="dashCenter">กำลังโหลด...</div>
+        </div>
+      </div>
+      <div><span class="badge bg-success rounded-pill px-3 py-2" id="dashStatus">ปกติ</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ⚠️ 1. ใส่ URL ของ CWF_Master_Hub ตรงนี้
+  const CENTRAL_API_URL = "https://script.google.com/macros/s/AKfycbxDpvQtOu9XX4CpEdZKPJTJN34WLMUBK9344-n-w3I1ul9VwdCLG9-l2-_vXTXoaOM55g/exec";
+  
+  // ⚠️ 2. ใส่ LIFF ID ที่ได้จาก LINE Developers (ถ้ายังไม่มี ให้เว้นว่างไว้ ระบบจะใช้ Mock ID แทนสำหรับทดสอบบนเว็บ)
+  const LIFF_ID = "2010977535-YsYO2i2t"; 
+
+  let userUid = "";
+  let userProfile = {};
+  let networkDataRaw = {}; // เก็บข้อมูลเครือข่ายไว้ดึงหมู่บ้าน
+  let userCenter = ""; // เก็บชื่อศูนย์ไว้โชว์ปุ่มติดต่อ
+
+  // ---------------------------------------------------
+  // 🚀 Step 1: เริ่มต้นระบบ LIFF และดึง UID
+  // ---------------------------------------------------
+  document.addEventListener("DOMContentLoaded", async () => {
+    if (LIFF_ID !== "") {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login(); return;
+        }
+        const profile = await liff.getProfile();
+        userUid = profile.userId;
+        userProfile = profile;
+        document.getElementById('lineProfileImg').src = profile.pictureUrl || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+        
+        checkRouteFromCentral(); // ไปหาว่าอยู่กองทุนไหน
+      } catch (err) {
+        Swal.fire("LIFF Error", "ไม่สามารถดึงข้อมูล LINE ได้", "error");
+      }
+    } else {
+      // 🛠️ กรณีทดสอบผ่านเว็บเบราว์เซอร์ปกติ (ไม่ผ่าน LINE)
+      userUid = "U" + Math.floor(Math.random() * 1000000); // จำลอง UID สุ่ม
+      checkRouteFromCentral();
+    }
+  });
+
+  // ---------------------------------------------------
+  // 🚦 Step 2: ถามสมองกลกลางว่า UID นี้อยู่ตำบลไหน
+  // ---------------------------------------------------
+  async function checkRouteFromCentral() {
+    try {
+      const res = await fetch(CENTRAL_API_URL, { 
+        method: "POST", body: JSON.stringify({ action: "getUserRoute", uid: userUid }) 
+      }).then(r => r.json());
+
+      if (res.status === 'success' && res.apiUrl) {
+        // 🎉 สมัครแล้ว! บันทึก API ของตำบลลงเครื่อง แล้วโหลดหน้า Dashboard
+        localStorage.setItem("cwf_user_api", res.apiUrl);
+        loadDashboard(res.apiUrl);
+      } else {
+        // 🆕 ยังไม่เคยสมัคร หรือหาไม่เจอ -> เปิดหน้าลงทะเบียน
+        fetchAvailableNetworks();
+      }
+    } catch (err) {
+      Swal.fire("Error", "เชื่อมต่อสมองกลกลางล้มเหลว", "error");
+    }
+  }
+
+  // ---------------------------------------------------
+  // 🆕 Step 3A: ดึงรายชื่อตำบลมาใส่ฟอร์มสมัคร
+  // ---------------------------------------------------
+  async function fetchAvailableNetworks() {
+    document.getElementById('loaderText').innerText = "กำลังเตรียมแบบฟอร์ม...";
+    try {
+      const res = await fetch(CENTRAL_API_URL, { 
+        method: "POST", body: JSON.stringify({ action: "getAvailableNetworks" }) 
+      }).then(r => r.json());
+
+      if (res.status === 'success') {
+        networkDataRaw = res.data;
+        let select = document.getElementById('networkSelect');
+        select.innerHTML = '<option value="" disabled selected>-- เลือกกองทุนเทศบาล/อบต. --</option>';
+        Object.keys(networkDataRaw).forEach(netName => {
+          select.innerHTML += `<option value="${netName}">${netName}</option>`;
+        });
+
+        document.getElementById('regUid').value = userUid;
+        document.getElementById('loaderScreen').style.display = 'none';
+        document.getElementById('registerScreen').style.display = 'block';
+      }
+    } catch (err) {
+      Swal.fire("Error", "ดึงข้อมูลเครือข่ายล้มเหลว", "error");
+    }
+  }
+
+  // อัปเดต Dropdown หมู่บ้านเมื่อเลือกตำบล
+  function loadCenters() {
+    const netName = document.getElementById('networkSelect').value;
+    const centers = networkDataRaw[netName] || ["ศูนย์ประสานงานกลาง"];
+    let select = document.getElementById('centerSelect');
+    select.innerHTML = '';
+    centers.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
+  }
+
+  // ส่งฟอร์มสมัครสมาชิกไปที่สมองกลกลาง
+  async function submitRegistration(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitReg');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>กำลังส่งข้อมูล...';
+    
+    const payload = Object.fromEntries(new FormData(e.target).entries());
+    payload.action = "centralRegister";
+    payload.pdpaConsent = true;
+
+    try {
+      const res = await fetch(CENTRAL_API_URL, { method: "POST", body: JSON.stringify(payload) }).then(r=>r.json());
+      if (res.status === 'success') {
+        Swal.fire({ title: 'สมัครสำเร็จ!', text: 'กรุณากดเข้าเมนูนี้ใหม่อีกครั้งเพื่อใช้งาน', icon: 'success' }).then(() => {
+           if(LIFF_ID !== "") liff.closeWindow(); 
+           else location.reload();
+        });
+      } else {
+        Swal.fire('ข้อผิดพลาด', res.message, 'error');
+      }
+    } catch (err) {
+      Swal.fire('Error', 'ไม่สามารถส่งข้อมูลได้', 'error');
+    } finally {
+      btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i> ส่งใบสมัครสมาชิก';
+    }
+  }
+
+  // ---------------------------------------------------
+  // 💳 Step 3B: โหลดข้อมูลสมุดบัญชีจากฐานข้อมูลตำบล
+  // ---------------------------------------------------
+  async function loadDashboard(localApiUrl) {
+    document.getElementById('loaderText').innerText = "กำลังดึงข้อมูลบัญชีของคุณ...";
+    try {
+      const res = await fetch(localApiUrl, { 
+        method: "POST", body: JSON.stringify({ action: "checkStatus", uid: userUid }) 
+      }).then(r => r.json());
+
+      if (res.status === 'registered') {
+        const d = res.memberData;
+        userCenter = d.center;
+        
+        document.getElementById('dashName').innerText = d.fullName;
+        document.getElementById('dashCenter').innerText = d.center;
+        document.getElementById('dashStatus').innerText = d.status;
+        
+        if(d.status.includes('รอ')) {
+           document.getElementById('dashStatus').className = "badge bg-warning text-dark rounded-pill px-3 py-2";
+        }
+        
+        document.getElementById('dashContrib').innerText = (d.totalContribution || 0).toLocaleString();
+        document.getElementById('dashWelfare').innerText = (d.totalWelfareReceived || 0).toLocaleString() + " ฿";
+        document.getElementById('dashPoints').innerText = (d.cwfPoints || 0).toLocaleString();
+        
+        if (d.tierName) {
+           document.getElementById('dashTier').innerHTML = `<i class="fa-solid fa-crown"></i> ${d.tierName}`;
+           document.getElementById('dashTier').style.background = d.tierColor || "#D97706";
+        }
+
+        document.getElementById('loaderScreen').style.display = 'none';
+        document.getElementById('dashboardScreen').style.display = 'block';
+      } else {
+        // หาก API ท้องถิ่นหาชื่อไม่เจอ (อาจโดนลบ) ให้กลับไปหน้าสมัคร
+        localStorage.removeItem("cwf_user_api");
+        fetchAvailableNetworks();
+      }
+    } catch (err) {
+      Swal.fire('เชื่อมต่อไม่สำเร็จ', 'ไม่สามารถดึงข้อมูลจากฐานข้อมูลตำบลได้ โปรดลองใหม่ภายหลัง', 'error');
+    }
+  }
+
+  // ปุ่มอัปเดต (รีเฟรชหน้า)
+  function checkStatus() {
+    location.reload();
+  }
+</script>
+</body>
+</html>
